@@ -10,6 +10,7 @@ from zigpy.zcl.clusters.security import IasZone
 from zhaquirks import MotionWithReset
 from zhaquirks.builder import (
     LIGHT_LUX,
+    PERCENTAGE,
     BinarySensorDeviceClass,
     EntityPlatform,
     EntityType,
@@ -17,6 +18,7 @@ from zhaquirks.builder import (
     SensorDeviceClass,
     SensorStateClass,
     UnitOfLength,
+    UnitOfTemperature,
     UnitOfTime,
 )
 from zhaquirks.tuya import TuyaLocalCluster, TuyaPowerConfigurationCluster2AAA
@@ -1622,8 +1624,10 @@ base_tuya_motion = (
 # therefore deliberately NOT mapped here - ZHA already creates those entities
 # from the real clusters, and mapping them again would duplicate them.
 #
-# This quirk only adds the radar tuning datapoints, which are otherwise
-# unreachable because nothing decodes 0xEF00 without a quirk. Configuration is
+# This quirk only adds the radar tuning and offset datapoints, which are otherwise
+# unreachable because nothing decodes 0xEF00 without a quirk. DP 109 (temperature
+# unit) is not exposed: it only changes the unit of DP 111, which is not mapped,
+# while 0x0402 stays in degrees Celsius. Configuration is
 # not skipped: ZHA must still enroll the IAS zone and set up reporting on the
 # standard clusters.
 #
@@ -1687,6 +1691,32 @@ base_tuya_motion = (
         entity_type=EntityType.CONFIG,
         translation_key="anti_interference",
         fallback_name="Anti interference",
+    )
+    # Offsets applied by the device to its own temperature and humidity reports
+    # (they shift the 0x0402/0x0405 values). Raw values are signed 32-bit.
+    .tuya_number(
+        dp_id=104,
+        attribute_name="humidity_offset",
+        type=t.int32s,
+        unit=PERCENTAGE,
+        min_value=-30,
+        max_value=30,
+        step=1,
+        translation_key="humidity_offset",
+        fallback_name="Humidity offset",
+    )
+    .tuya_number(
+        dp_id=105,
+        attribute_name="temperature_offset",
+        type=t.int32s,
+        unit=UnitOfTemperature.CELSIUS,
+        min_value=-2.0,
+        max_value=2.0,
+        step=0.1,
+        multiplier=0.1,
+        device_class=NumberDeviceClass.TEMPERATURE_DELTA,
+        translation_key="temperature_offset",
+        fallback_name="Temperature offset",
     )
     .tuya_number(
         dp_id=107,
