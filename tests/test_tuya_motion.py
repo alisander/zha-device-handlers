@@ -215,6 +215,12 @@ ZCL_ZG204ZX_FADING_TIME = (
     b"\tL\x01\x00\x05\x66\x02\x00\x04\x00\x00\x00\x3c"  # DP 102 = 60
 )
 ZCL_ZG204ZX_ANTI_INTERF = b"\tL\x01\x00\x05\x67\x01\x00\x01\x01"  # DP 103 = True, bool
+ZCL_ZG204ZX_HUMIDITY_OFFSET = (
+    b"\tL\x01\x00\x05\x68\x02\x00\x04\xff\xff\xff\xe2"  # DP 104 = -30
+)
+ZCL_ZG204ZX_TEMPERATURE_OFFSET = (
+    b"\tL\x01\x00\x05\x69\x02\x00\x04\xff\xff\xff\xf1"  # DP 105 = -15, i.e. -1.5 C
+)
 ZCL_ZG204ZX_LUX_INTERVAL = (
     b"\tL\x01\x00\x05\x6b\x02\x00\x04\x00\x00\x00\x0f"  # DP 107 = 15
 )
@@ -231,6 +237,8 @@ ZCL_ZG204ZX_MOTION_SENS = (
         (ZCL_ZG204ZX_DISTANCE, "static_detection_distance", 500),
         (ZCL_ZG204ZX_FADING_TIME, "presence_timeout", 60),
         (ZCL_ZG204ZX_ANTI_INTERF, "anti_interference", 1),
+        (ZCL_ZG204ZX_HUMIDITY_OFFSET, "humidity_offset", -30),
+        (ZCL_ZG204ZX_TEMPERATURE_OFFSET, "temperature_offset", -15),
         (ZCL_ZG204ZX_LUX_INTERVAL, "illuminance_interval", 15),
         (ZCL_ZG204ZX_INDICATOR, "indicator", 0),
         (ZCL_ZG204ZX_MOTION_SENS, "motion_detection_sensitivity", 5),
@@ -307,6 +315,9 @@ def test_zg204zx_hides_pir_delays(zigpy_device_from_v2_quirk, manufacturer):
         ("static_detection_distance", 437, b"\x04\x02\x00\x04\x00\x00\x01\xb5"),
         ("presence_timeout", 28800, b"\x66\x02\x00\x04\x00\x00\x70\x80"),
         ("indicator", True, b"\x6c\x01\x00\x01\x01"),
+        ("humidity_offset", -30, b"\x68\x02\x00\x04\xff\xff\xff\xe2"),
+        ("temperature_offset", -15, b"\x69\x02\x00\x04\xff\xff\xff\xf1"),
+        ("temperature_offset", 20, b"\x69\x02\x00\x04\x00\x00\x00\x14"),
     ],
 )
 async def test_zg204zx_write(zigpy_device_from_v2_quirk, attr_name, value, dp_data):
